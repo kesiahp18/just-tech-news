@@ -116,6 +116,19 @@ router.put('/:id', (req, res) => {
     });
 });
 
+router.put('/upvote', (req, res) => {
+    //check if session exists
+    if(req.session) {
+        // pass session id along with all destructured properties on req.body
+        Post.upvote({...req.body, user_id: req.session.user_id}, {Vote, Comment, User})
+        .then(updatedVoteData => res.json(updatedVoteData))
+        .catch(err => {
+            console.log(err);
+            res.status(500).json(err);
+        });
+    }
+});
+
 //delete a post
 router.delete('/:id', (req, res) => {
     Post.destroy({
