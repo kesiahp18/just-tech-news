@@ -85,12 +85,15 @@ router.post('/', (req, res) => {
 
 //vote on a post
 router.put('/upvote', (req, res) => {
-    Post.upvote(req.body, {Vote})
-    .then(dbPostData => res.json(dbPostData))
-    .catch(err => {
-        console.log(err);
-        res.status(400).json(err);
-    });
+    // custom static method created in models/Post.js
+    if (req.session) {
+      Post.upvote({ ...req.body, user_id: req.session.user_id }, { Vote, Comment, User })
+        .then(updatedVoteData => res.json(updatedVoteData))
+        .catch(err => {
+          console.log(err);
+          res.status(500).json(err);
+        });
+    }
 });
 
 
@@ -116,6 +119,19 @@ router.put('/:id', (req, res) => {
     });
 });
 
+router.put('/upvote', (req, res) => {
+    //check if session exists
+    if(req.session) {
+        // pass session id along with all destructured properties on req.body
+        Post.upvote({...req.body, user_id: req.session.user_id}, {Vote, Comment, User})
+        .then(updatedVoteData => res.json(updatedVoteData))
+        .catch(err => {
+            console.log(err);
+            res.status(500).json(err);
+        });
+    }
+});
+
 //delete a post
 router.delete('/:id', (req, res) => {
     Post.destroy({
@@ -135,5 +151,25 @@ router.delete('/:id', (req, res) => {
         res.status(500).json(err);
     })
 })
+
+//delete a user
+router.delete('/:id', (req, res) => {
+    User.destroy({
+        where: {
+            id: req.params.id
+        }
+    })
+    .then(dbUserData => {
+        if (!dbUserData) {
+            res.status(404).json({ message: 'No user found with this id' });
+            return;
+        }
+        res.json(dbUserData);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+    });
+});
 
 module.exports = router;
