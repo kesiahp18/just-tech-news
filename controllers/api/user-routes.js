@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { read } = require('fs');
 const { User, Post, Vote, Comment } = require('../../models');
+const withAuth = require('../../utils/auth');
 
 // GET /api/users
 router.get('/', (req, res) => {
@@ -140,6 +141,6 @@ router.post('/logout', (req, res) => {
 });
 
 // DELETE /api/users/1
-router.delete('/:id', (req, res) => {});
+router.delete('/:id', withAuth, (req, res) => {});
 
 module.exports = router;
